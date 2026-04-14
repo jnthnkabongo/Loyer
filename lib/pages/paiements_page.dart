@@ -1,85 +1,105 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_loyer/services/api_service.dart';
 
-class Paiement {
-  final String id;
-  final String nomClient;
-  final String appartement;
-  final double montant;
-  final DateTime datePaiement;
-  final String methode;
-  final String statut;
-  final String periode;
+class PaiementsPage extends StatefulWidget {
+  const PaiementsPage({super.key});
 
-  Paiement({
-    required this.id,
-    required this.nomClient,
-    required this.appartement,
-    required this.montant,
-    required this.datePaiement,
-    required this.methode,
-    required this.statut,
-    required this.periode,
-  });
+  @override
+  State<PaiementsPage> createState() => _PaiementsPageState();
 }
 
-class PaiementsPage extends StatelessWidget {
-  PaiementsPage({super.key});
+class _PaiementsPageState extends State<PaiementsPage> {
+  Map<String, dynamic>? _loadPaiements;
+  bool _isLoading = false;
+  List<dynamic>? _filteredPaiements;
+  final TextEditingController _searchController = TextEditingController();
+  Map<String, dynamic>? _userData;
 
-  final List<Paiement> paiements = [
-    Paiement(
-      id: '1',
-      nomClient: 'Marie Dubois',
-      appartement: 'Appartement A-101',
-      montant: 850.0,
-      datePaiement: DateTime(2024, 4, 5),
-      methode: 'Virement',
-      statut: 'Payé',
-      periode: 'Avril 2024',
-    ),
-    Paiement(
-      id: '2',
-      nomClient: 'Jean Martin',
-      appartement: 'Studio B-205',
-      montant: 650.0,
-      datePaiement: DateTime(2024, 4, 3),
-      methode: 'Carte',
-      statut: 'Payé',
-      periode: 'Avril 2024',
-    ),
-    Paiement(
-      id: '3',
-      nomClient: 'Sophie Bernard',
-      appartement: 'Appartement C-302',
-      montant: 1200.0,
-      datePaiement: DateTime(2024, 4, 1),
-      methode: 'Espèces',
-      statut: 'Payé',
-      periode: 'Avril 2024',
-    ),
-    Paiement(
-      id: '4',
-      nomClient: 'Pierre Leroy',
-      appartement: 'Duplex D-401',
-      montant: 1500.0,
-      datePaiement: DateTime(2024, 4, 7),
-      methode: 'Virement',
-      statut: 'Payé',
-      periode: 'Avril 2024',
-    ),
-    Paiement(
-      id: '5',
-      nomClient: 'Claire Petit',
-      appartement: 'Studio E-105',
-      montant: 750.0,
-      datePaiement: DateTime(2024, 4, 6),
-      methode: 'Carte',
-      statut: 'Payé',
-      periode: 'Avril 2024',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadPaiementsData();
+    _loadData();
+    _searchController.addListener(_filterPaiements);
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final userData = await ApiService.recupererData('user');
+    print("Les informations de l'utilisateur: $userData");
+
+    setState(() {
+      _isLoading = false;
+      _userData = userData;
+    });
+  }
+
+  void _filterPaiements() {
+    final query = _searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      setState(() {
+        _filteredPaiements = _loadPaiements?['liste_paiements'] ?? [];
+      });
+      return;
+    }
+
+    final filtered = (_loadPaiements?['liste_paiements'] ?? []).where((
+      paiement,
+    ) {
+      final nomClient = (paiement['nom_client'] ?? '').toString().toLowerCase();
+      final appartement = (paiement['appartement'] ?? '')
+          .toString()
+          .toLowerCase();
+      return nomClient.contains(query) || appartement.contains(query);
+    }).toList();
+
+    setState(() {
+      _filteredPaiements = filtered;
+    });
+  }
+
+  Future<void> _loadPaiementsData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final loadPaiements = await ApiService.getPaiements();
+    print("Les informations des paiements: $loadPaiements");
+
+    setState(() {
+      _isLoading = false;
+      _loadPaiements = loadPaiements;
+      _filteredPaiements = _loadPaiements?['liste_paiements'] ?? [];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_loadPaiements == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
+        body: Center(
+          child: Text(
+            "Erreur lors du chargement des données",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       floatingActionButton: FloatingActionButton(
@@ -139,11 +159,28 @@ class PaiementsPage extends StatelessWidget {
                       width: 2,
                     ),
                   ),
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    backgroundImage: const AssetImage('assets/image/fond.jpeg'),
-                  ),
+                  child: _userData?['photo'] != null
+                      ? ClipOval(
+                          child: Image.network(
+                            'http://10.0.2.2:8000/storage/${_userData?['photo']}',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Colors.white24,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -153,95 +190,7 @@ class PaiementsPage extends StatelessWidget {
       body: Column(
         children: [
           // Header avec statistiques
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Paiements Reçus',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${paiements.length} loyers payés ce mois',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${paiements.fold(0.0, (sum, p) => sum + p.montant).toStringAsFixed(0)} \$',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      Text(
-                        'Total',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 16),
 
           // Barre de recherche et filtres
           Container(
@@ -262,10 +211,7 @@ class PaiementsPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(12),
@@ -279,8 +225,17 @@ class PaiementsPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            'Rechercher un client...',
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Rechercher un paiement...',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 14,
+                                fontFamily: 'Poppins',
+                              ),
+                              border: InputBorder.none,
+                            ),
                             style: TextStyle(
                               color: Colors.grey.shade500,
                               fontSize: 14,
@@ -313,21 +268,25 @@ class PaiementsPage extends StatelessWidget {
 
           // Liste des paiements
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: paiements.length,
-              itemBuilder: (context, index) {
-                final paiement = paiements[index];
-                return _buildPaiementCard(paiement);
-              },
-            ),
+            child:
+                (_loadPaiements == null ||
+                    _loadPaiements!['liste_paiements'] == null)
+                ? const Center(child: Text("Aucun paiement trouvé"))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _filteredPaiements?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final paiement = _filteredPaiements![index];
+                      return _buildPaiementCard(paiement);
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPaiementCard(Paiement paiement) {
+  Widget _buildPaiementCard(Map<String, dynamic> paiement) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -372,7 +331,7 @@ class PaiementsPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      paiement.nomClient,
+                      'Paiement de ${paiement['contrat']?['locataire']?['prenom'] ?? 'Aucun locataire'} ${paiement['contrat']?['locataire']?['nom'] ?? 'Aucun locataire'}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -382,7 +341,8 @@ class PaiementsPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      paiement.appartement,
+                      paiement['contrat']?['bien']?['nom'] ??
+                          'Aucun appartement',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -406,7 +366,7 @@ class PaiementsPage extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  paiement.statut,
+                  paiement['statut'] ?? 'Aucun statut',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -430,7 +390,7 @@ class PaiementsPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${paiement.datePaiement.day.toString().padLeft(2, '0')}/${paiement.datePaiement.month.toString().padLeft(2, '0')}/${paiement.datePaiement.year}',
+                      '${DateTime.parse(paiement['created_at']).day.toString().padLeft(2, '0')}/${DateTime.parse(paiement['created_at']).month.toString().padLeft(2, '0')}/${DateTime.parse(paiement['created_at']).year}',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade600,
@@ -450,7 +410,7 @@ class PaiementsPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      paiement.methode,
+                      paiement['mode_paiement'] ?? 'Aucun mode de paiement',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade600,
@@ -465,7 +425,7 @@ class PaiementsPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      '${paiement.montant.toStringAsFixed(0)} \$',
+                      '${double.tryParse(paiement['montant']?.toString() ?? '0')?.toStringAsFixed(0) ?? '0'} \$',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,

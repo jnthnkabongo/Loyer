@@ -1,10 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_loyer/services/api_service.dart';
 
-class ParametresPage extends StatelessWidget {
-  ParametresPage({super.key});
+class ParametresPage extends StatefulWidget {
+  const ParametresPage({super.key});
+
+  @override
+  State<ParametresPage> createState() => _ParametresPageState();
+}
+
+class _ParametresPageState extends State<ParametresPage> {
+  Map<String, dynamic>? _userData;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final userData = await ApiService.recupererData('user');
+    print("Les informations de l'utilisateur: $userData");
+
+    setState(() {
+      _isLoading = false;
+      _userData = userData;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_userData == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
+        body: const Center(
+          child: Text("Erreur lors du chargement des données"),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -41,11 +84,28 @@ class ParametresPage extends StatelessWidget {
                       width: 2,
                     ),
                   ),
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    backgroundImage: const AssetImage('assets/image/fond.jpeg'),
-                  ),
+                  child: _userData?['photo'] != null
+                      ? ClipOval(
+                          child: Image.network(
+                            'http://10.0.2.2:8000/storage/${_userData?['photo']}',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Colors.white24,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -85,8 +145,8 @@ class ParametresPage extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 32,
                       backgroundColor: Colors.white.withValues(alpha: 0.3),
-                      backgroundImage: const AssetImage(
-                        'assets/image/fond.jpeg',
+                      backgroundImage: NetworkImage(
+                        'http://10.0.2.2:8000/storage/${_userData?['photo']}',
                       ),
                     ),
                   ),
@@ -95,8 +155,8 @@ class ParametresPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Admin Van Mut',
+                        Text(
+                          '${_userData?['name'] ?? 'Admin'}',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -106,7 +166,7 @@ class ParametresPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'admin@vanmut.com',
+                          '${_userData?['email'] ?? 'admin@vanmut.com'}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white.withValues(alpha: 0.9),
@@ -123,8 +183,8 @@ class ParametresPage extends StatelessWidget {
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Administrateur',
+                          child: Text(
+                            '${_userData?['role'] ?? 'Sans rôle'}',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,

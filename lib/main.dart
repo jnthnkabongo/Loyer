@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       title: 'Marcel Gestion',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7C3AED)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFF5F7FA)),
       ),
       debugShowCheckedModeBanner: false,
       home: const AuthentificationPage(),

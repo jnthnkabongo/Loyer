@@ -61,7 +61,7 @@ CREATE TABLE contrats (
     date_debut DATE,
     date_fin DATE NULL,
     loyer_mensuel DECIMAL(10,2),
-    caution DECIMAL(10,2) DEFAULT 0,
+    garantie DECIMAL(10,2) DEFAULT 0,
     statut ENUM('actif','termine','resilie') DEFAULT 'actif',
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,

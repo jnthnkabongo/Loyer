@@ -74,13 +74,13 @@ class _MainPageAdminState extends State<MainPageAdmin> {
                 _buildNavItem(
                   icon: Icons.home_work_outlined,
                   selectedIcon: Icons.home_work_rounded,
-                  label: 'Appartements',
+                  label: 'Logements',
                   index: 3,
                 ),
                 _buildNavItem(
                   icon: Icons.settings_outlined,
                   selectedIcon: Icons.settings_rounded,
-                  label: 'Params',
+                  label: 'Paramètres',
                   index: 4,
                 ),
               ],
@@ -125,7 +125,7 @@ class _MainPageAdminState extends State<MainPageAdmin> {
                 color: isSelected
                     ? const Color(0xFF3B82F6)
                     : Colors.grey.shade600,
-                size: 26,
+                size: 20,
               ),
             ),
             const SizedBox(height: 6),
@@ -135,7 +135,7 @@ class _MainPageAdminState extends State<MainPageAdmin> {
                 color: isSelected
                     ? const Color(0xFF3B82F6)
                     : Colors.grey.shade600,
-                fontSize: isSelected ? 13 : 12,
+                fontSize: isSelected ? 12 : 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
               child: Text(label),
