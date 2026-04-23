@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_loyer/authentification_page.dart';
 import 'package:gestion_loyer/services/api_service.dart';
 
 class ParametresPage extends StatefulWidget {
@@ -32,6 +33,120 @@ class _ParametresPageState extends State<ParametresPage> {
     });
   }
 
+  Future<void> _logout() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await ApiService.logout();
+      // Naviguer vers la page de connexion après déconnexion
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const AuthentificationPage()),
+      );
+    } catch (e) {
+      print("Erreur lors de la déconnexion: ${e.toString()}");
+      // Afficher un message d'erreur
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de la déconnexion: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _showLogoutConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: Colors.red,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Confirmer la déconnexion',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Êtes-vous sûr de vouloir vous déconnecter ?\n\nVous devrez vous reconnecter pour accéder à votre compte.',
+            style: TextStyle(fontSize: 14, fontFamily: 'Poppins', height: 1.5),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Annuler',
+                style: TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fermer la boîte de dialogue
+                _logout(); // Effectuer la déconnexion
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Se déconnecter',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -43,8 +158,22 @@ class _ParametresPageState extends State<ParametresPage> {
     if (_userData == null) {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
-        body: const Center(
-          child: Text("Erreur lors du chargement des données"),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text(
+                "Erreur lors du chargement des données",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -87,7 +216,7 @@ class _ParametresPageState extends State<ParametresPage> {
                   child: _userData?['photo'] != null
                       ? ClipOval(
                           child: Image.network(
-                            'http://10.0.2.2:8000/storage/${_userData?['photo']}',
+                            'https://mecanismenationaldesuivi.alwaysdata.net/public/storage/${_userData?['photo']}',
                             width: 40,
                             height: 40,
                             fit: BoxFit.cover,
@@ -146,7 +275,7 @@ class _ParametresPageState extends State<ParametresPage> {
                       radius: 32,
                       backgroundColor: Colors.white.withValues(alpha: 0.3),
                       backgroundImage: NetworkImage(
-                        'http://10.0.2.2:8000/storage/${_userData?['photo']}',
+                        'https://mecanismenationaldesuivi.alwaysdata.net/public/storage/${_userData?['photo']}',
                       ),
                     ),
                   ),
@@ -216,66 +345,6 @@ class _ParametresPageState extends State<ParametresPage> {
                 Icons.lock_outline_rounded,
                 () {},
               ),
-              _buildSettingsItem(
-                'Authentification',
-                'Configurez la double authentification',
-                Icons.security_rounded,
-                () {},
-              ),
-            ]),
-
-            const SizedBox(height: 24),
-
-            // Section Préférences
-            _buildSettingsSection('Préférences', Icons.tune_rounded, [
-              _buildSettingsItem(
-                'Notifications',
-                'Gérez les notifications push',
-                Icons.notifications_outlined,
-                () {},
-              ),
-              _buildSettingsItem(
-                'Langue',
-                'Français',
-                Icons.language_outlined,
-                () {},
-              ),
-              _buildSettingsItem(
-                'Thème',
-                'Clair',
-                Icons.palette_outlined,
-                () {},
-              ),
-              _buildSettingsItem(
-                'Monnaie',
-                'USD \$',
-                Icons.attach_money_outlined,
-                () {},
-              ),
-            ]),
-
-            const SizedBox(height: 24),
-
-            // Section Application
-            _buildSettingsSection('Application', Icons.apps_rounded, [
-              _buildSettingsItem(
-                'Sauvegarde',
-                'Configurez la sauvegarde automatique',
-                Icons.cloud_upload_outlined,
-                () {},
-              ),
-              _buildSettingsItem(
-                'Exportation',
-                'Exportez vos données',
-                Icons.file_download_outlined,
-                () {},
-              ),
-              _buildSettingsItem(
-                'À propos',
-                'Version 1.0.0',
-                Icons.info_outline_rounded,
-                () {},
-              ),
             ]),
 
             const SizedBox(height: 24),
@@ -289,8 +358,8 @@ class _ParametresPageState extends State<ParametresPage> {
                 () {},
               ),
               _buildSettingsItem(
-                'Contact',
-                'Contactez notre support',
+                'Notification',
+                'Gérez vos notifications',
                 Icons.mail_outline_rounded,
                 () {},
               ),
@@ -305,69 +374,72 @@ class _ParametresPageState extends State<ParametresPage> {
             const SizedBox(height: 24),
 
             // Bouton déconnexion
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+            GestureDetector(
+              onTap: _showLogoutConfirmationDialog,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    width: 1,
                   ),
-                ],
-                border: Border.all(
-                  color: Colors.red.withValues(alpha: 0.2),
-                  width: 1,
                 ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.logout_rounded,
+                        color: Colors.red,
+                        size: 24,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.logout_rounded,
-                      color: Colors.red,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Déconnexion',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.red,
-                            fontFamily: 'Poppins',
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Déconnexion',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.red,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Déconnectez-vous de votre compte',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                            fontFamily: 'Poppins',
+                          Text(
+                            'Déconnectez-vous de votre compte',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.grey.shade400,
-                    size: 20,
-                  ),
-                ],
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.grey.shade400,
+                      size: 20,
+                    ),
+                  ],
+                ),
               ),
             ),
 

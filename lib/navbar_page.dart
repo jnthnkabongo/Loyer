@@ -135,7 +135,7 @@ class _MainPageAdminState extends State<MainPageAdmin> {
                 color: isSelected
                     ? const Color(0xFF3B82F6)
                     : Colors.grey.shade600,
-                fontSize: isSelected ? 12 : 11,
+                fontSize: isSelected ? 12 : 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
               child: Text(label),

@@ -56,30 +56,39 @@ class _AuthentificationPageState extends State<AuthentificationPage> {
       } else {
         print(response['message']);
       }
+
+      // Naviguer vers le dashboard après connexion réussie
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Connexion réussie'),
+            backgroundColor: vertSucces,
+          ),
+        );
+
+        // Naviguer vers le dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainPageAdmin()),
+        );
+      }
     } catch (e) {
       print(e);
       _showErrorSnackBar('Erreur de connexion: ${e.toString()}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Connexion échouée'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
 
     setState(() {
       _isLoading = false;
     });
-
-    // Naviguer vers le dashboard après connexion réussie
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Connexion réussie'),
-          backgroundColor: vertSucces,
-        ),
-      );
-
-      // Naviguer vers le dashboard
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainPageAdmin()),
-      );
-    }
   }
 
   void _showErrorSnackBar(String message) {
@@ -101,7 +110,7 @@ class _AuthentificationPageState extends State<AuthentificationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 100),
 
                   // Header avec illustration
                   Center(
@@ -121,7 +130,7 @@ class _AuthentificationPageState extends State<AuthentificationPage> {
                             fit: BoxFit.contain,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 100),
 
                         // Titre
                         const Text(
@@ -298,40 +307,40 @@ class _AuthentificationPageState extends State<AuthentificationPage> {
                   const SizedBox(height: 20),
 
                   // Lien d'inscription
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Pas encore de compte ?',
-                          style: TextStyle(
-                            color: grisTexte,
-                            fontSize: 14,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MainPageAdmin(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'S\'inscrire',
-                            style: TextStyle(
-                              color: bleuPrincipal,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // Center(
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.center,
+                  //     children: [
+                  //       Text(
+                  //         'Pas encore de compte ?',
+                  //         style: TextStyle(
+                  //           color: grisTexte,
+                  //           fontSize: 14,
+                  //           fontFamily: 'Poppins',
+                  //         ),
+                  //       ),
+                  //       TextButton(
+                  //         onPressed: () {
+                  //           Navigator.push(
+                  //             context,
+                  //             MaterialPageRoute(
+                  //               builder: (context) => const MainPageAdmin(),
+                  //             ),
+                  //           );
+                  //         },
+                  //         child: Text(
+                  //           'S\'inscrire',
+                  //           style: TextStyle(
+                  //             color: bleuPrincipal,
+                  //             fontSize: 14,
+                  //             fontWeight: FontWeight.w600,
+                  //             fontFamily: 'Poppins',
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                 ],
               ),
             ),

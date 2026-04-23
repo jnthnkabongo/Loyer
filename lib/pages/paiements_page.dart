@@ -9,18 +9,54 @@ class PaiementsPage extends StatefulWidget {
 }
 
 class _PaiementsPageState extends State<PaiementsPage> {
-  Map<String, dynamic>? _loadPaiements;
   bool _isLoading = false;
-  List<dynamic>? _filteredPaiements;
-  final TextEditingController _searchController = TextEditingController();
+  bool _hasError = false;
+
   Map<String, dynamic>? _userData;
+  Map<String, dynamic>? _loadPaiements;
+
+  List<dynamic>? _filteredPaiements;
+
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadPaiementsData();
-    _loadData();
     _searchController.addListener(_filterPaiements);
+    _initPage();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  //===============================
+  // CHARGEMENT GLOBAL
+  // ==============================
+  Future<void> _initPage() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    try {
+      await _loadPaiementsData();
+      await _loadData();
+    } catch (e) {
+      debugPrint("Erreur globale : $e");
+    }
+
+    setState(() {
+      _hasError = true;
+    });
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadData() async {
@@ -89,42 +125,26 @@ class _PaiementsPageState extends State<PaiementsPage> {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
         body: Center(
-          child: Text(
-            "Erreur lors du chargement des données",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text(
+                "Erreur lors du chargement des données",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Action pour ajouter un nouveau paiement
-        },
-        backgroundColor: const Color(0xFF3B82F6),
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(
-            Icons.payment_rounded,
-            color: Colors.white,
-            size: 28,
-          ),
-        ),
-      ),
       appBar: AppBar(
         title: const Text(
           "Dashboard Van Mut",
@@ -162,7 +182,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                   child: _userData?['photo'] != null
                       ? ClipOval(
                           child: Image.network(
-                            'http://10.0.2.2:8000/storage/${_userData?['photo']}',
+                            'https://mecanismenationaldesuivi.alwaysdata.net/public/storage/${_userData?['photo']}',
                             width: 40,
                             height: 40,
                             fit: BoxFit.cover,
@@ -377,64 +397,112 @@ class _PaiementsPageState extends State<PaiementsPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.calendar_today_rounded,
-                      size: 16,
-                      color: Colors.grey.shade500,
+                    Text(
+                      "Date de création",
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.grey.shade500,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(height: 2),
                     Text(
                       '${DateTime.parse(paiement['created_at']).day.toString().padLeft(2, '0')}/${DateTime.parse(paiement['created_at']).month.toString().padLeft(2, '0')}/${DateTime.parse(paiement['created_at']).year}',
                       style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
+                        fontSize: 10,
+                        color: Colors.grey.shade700,
                         fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(width: 15),
               Expanded(
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.payment_rounded,
-                      size: 16,
-                      color: Colors.grey.shade500,
-                    ),
-                    const SizedBox(width: 8),
                     Text(
-                      paiement['mode_paiement'] ?? 'Aucun mode de paiement',
+                      "Mode de paiement",
                       style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
+                        fontSize: 9,
+                        color: Colors.grey.shade500,
                         fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      paiement['mode_paiement'] ?? 'Non spécifié',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade700,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(width: 15),
               Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${double.tryParse(paiement['montant']?.toString() ?? '0')?.toStringAsFixed(0) ?? '0'} \$',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1E40AF),
+                      "Mois concerné",
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.grey.shade500,
                         fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      paiement['mois_concerne'] ?? 'Non spécifié',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade700,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
+              ),
+              SizedBox(width: 15),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "Montant",
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.grey.shade500,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${double.tryParse(paiement['montant']?.toString() ?? '0')?.toStringAsFixed(0) ?? '0'} \$',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1E40AF),
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

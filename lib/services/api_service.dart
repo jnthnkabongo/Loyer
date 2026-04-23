@@ -1,27 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
+//import 'dart:io';
+//import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   //static const String baseUrl = '';
 
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://192.168.1.65:8000';
-    } else if (Platform.isAndroid) {
-      // Utiliser l'IP du réseau pour les téléphones Android physiques
-      //return 'http://192.168.1.65:8000';
-      //Pour l'émulateur Android, utiliser:
-      return 'http://10.0.2.2:8000';
-    } else if (Platform.isIOS) {
-      return 'http://192.168.1.65:8000';
-    } else {
-      return 'http://localhost:8000';
-    }
-  }
-
+  static const String baseUrl ='https://mecanismenationaldesuivi.alwaysdata.net';
   static const String _tokenKey = 'auth_token';
   static const String _userkey = 'user';
 
@@ -174,6 +160,68 @@ class ApiService {
     }
   }
 
+  //Liste locataires avec condition
+  static Future<Map<String, dynamic>> getLocatairesCond() async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/listelocatairescond'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("Les locataires: $data");
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
+  //Récupérer les notifications de loyers impayés
+  static Future<Map<String, dynamic>> getUnpaidNotifications() async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) throw Exception('Token non trouvé');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/unpaid-notifications'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("Notifications loyers impayés: $data");
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ??
+            'Erreur lors de la récupération des notifications';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
   //CRUD Paiements
   static Future<Map<String, dynamic>> getPaiements() async {
     try {
@@ -191,6 +239,38 @@ class ApiService {
         },
       );
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
+  static Future<Map<String, dynamic>> addPaiementLocataire(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/createpaiement'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
         return data;
       } else {
@@ -234,7 +314,39 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> addLogement(Map<String, dynamic> data) async {
+  //recuperation logement avec condition
+  static Future<Map<String, dynamic>> getLogementsCond() async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/listebienscond'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
+  static Future<Map<String, dynamic>> addLogement(
+    Map<String, dynamic> data,
+  ) async {
     try {
       final token = await recupererData(_tokenKey);
       if (token == null) {
@@ -250,6 +362,36 @@ class ApiService {
         },
         body: jsonEncode(data),
       );
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
+  //CRUD contrat
+  static Future<Map<String, dynamic>> getContrats() async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/listecontrats'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data;
@@ -263,16 +405,93 @@ class ApiService {
       throw Exception('Erreur de réseau : ${e.toString()}');
     }
   }
-}
 
-// {
-//     "message": "Dashboard du locataire",
-//     "liste_utilisateurs": 2,
-//     "liste_paiements_mois": "800.00",
-//     "liste_paiements_total": "800.00",
-//     "liste_appartements": 1,
-//     "liste_locataires_insolvables": 0,
-//     "liste_appartements_loues": 1,
-//     "liste_appartements_disponibles": 0,
-//     "liste_locataires": 1
-// }
+  //Recuperer les contrats d'un locataire conditionner
+  static Future<Map<String, dynamic>> getContratsCond() async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/listecontratscond'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
+  //Add Contrat logement
+  static Future<Map<String, dynamic>> addContratLocataire(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/createcontrat'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
+  //Logout de l'application
+  static Future<void> logout() async {
+    try {
+      // Supprimer le token d'authentification
+      await supprimerData(_tokenKey);
+
+      // Supprimer les données utilisateur
+      await supprimerData(_userkey);
+
+      print("Déconnexion réussie - données effacées");
+    } catch (e) {
+      print("Erreur lors de la déconnexion: ${e.toString()}");
+      throw Exception('Erreur lors de la déconnexion: ${e.toString()}');
+    }
+  }
+
+  // Méthode pour supprimer n'importe quelle donnée
+  static Future<void> supprimerData(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(key);
+    } catch (e) {
+      print("Erreur lors de la suppression des données: ${e.toString()}");
+    }
+  }
+}

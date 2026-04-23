@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gestion_loyer/services/api_service.dart';
+import 'package:gestion_loyer/widgets/notification_badge.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -67,8 +68,22 @@ class _DashboardPageState extends State<DashboardPage> {
     if (_userData == null) {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
-        body: const Center(
-          child: Text("Erreur lors du chargement des données"),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text(
+                "Erreur lors du chargement des données",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -97,6 +112,10 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         actions: [
+          // Badge de notification
+          NotificationBadge(),
+
+          // Photo de profil
           Container(
             margin: const EdgeInsets.only(right: 16),
             child: Row(
@@ -112,7 +131,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: ClipOval(
                     child: _userData?['photo'] != null
                         ? Image.network(
-                            'http://10.0.2.2:8000/storage/${_userData?['photo']}',
+                            'https://mecanismenationaldesuivi.alwaysdata.net/public/storage/${_userData?['photo']}',
                             width: 40,
                             height: 40,
                             fit: BoxFit.cover,
@@ -256,9 +275,9 @@ class _DashboardPageState extends State<DashboardPage> {
                             children: [
                               Expanded(
                                 child: _buildAnimatedQuickStat(
-                                  'Revenus/Mois',
-                                  '${_dashboardData?['liste_paiements_mois'] ?? 0}',
-                                  Icons.trending_up_rounded,
+                                  'Locataires',
+                                  '${_dashboardData?['liste_locataires'] ?? 0}',
+                                  Icons.people,
                                   Colors.green.shade400,
                                 ),
                               ),
@@ -303,7 +322,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               Expanded(
                                 child: _buildAnimatedQuickStat(
                                   'En Retard',
-                                  '${_dashboardData?['liste_locataires_insolvables'] ?? 0}',
+                                  '${_dashboardData?['liste_appartements_disponibles'] ?? 0}',
                                   Icons.warning_rounded,
                                   Colors.orange.shade400,
                                 ),
@@ -373,7 +392,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           Expanded(
                             child: _buildModernCard(
                               'Logements occupés',
-                              '${_dashboardData?['liste_appartements_loues'] ?? 0}',
+                              '${_dashboardData?['liste_appartements_loues'] ?? 0} \$',
                               Icons.people_rounded,
                               [
                                 const Color(0xFF8B5CF6),
