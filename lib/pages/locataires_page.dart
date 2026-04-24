@@ -85,7 +85,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
     });
 
     final userData = await ApiService.recupererData('user');
-    print("Les informations de l'utilisateur: $userData");
+    //print("Les informations de l'utilisateur: $userData");
 
     setState(() {
       _isLoading = false;
@@ -99,7 +99,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
     });
 
     final listeBiens = await ApiService.getLogementsCond();
-    print("Les biens: $listeBiens");
+    //print("Les biens: $listeBiens");
 
     setState(() {
       _isLoading = false;
@@ -144,7 +144,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
     });
 
     final listeContrats = await ApiService.getContrats();
-    print("Les contrats: $listeContrats");
+    //print("Les contrats: $listeContrats");
 
     setState(() {
       _isLoading = false;
@@ -194,13 +194,13 @@ class _LocatairesPageState extends State<LocatairesPage> {
         'adresse': _adresseController.text,
       };
 
-      print('Données envoyées: $requestData');
-      print('bien_id value: $_selectedLogementId');
-      print('bien_id string: ${_selectedLogementId?.toString() ?? ''}');
+      // print('Données envoyées: $requestData');
+      // print('bien_id value: $_selectedLogementId');
+      // print('bien_id string: ${_selectedLogementId?.toString() ?? ''}');
 
       final response = await ApiService.addLocataire(requestData);
 
-      print('Réponse API: $response');
+      //print('Réponse API: $response');
 
       // ✅ Vérifier la réponse API
       if (response['status'] == true) {
@@ -631,24 +631,41 @@ class _LocatairesPageState extends State<LocatairesPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // TODO: Implémenter la suppression
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Suppression bientôt disponible'),
-                    backgroundColor: Color(0xFF10B981),
-                  ),
-                );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await ApiService.deleteLocataire({'id': locataire['id']});
+
+                  _loadLocatairesData();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Locataire supprimé avec succès'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  // Fermer le dialog apres le succès
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erreur: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  // Fermer le dialog après l'erreur
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text(
+                'Supprimer',
+                style: TextStyle(color: Colors.red),
               ),
-              child: const Text('Supprimer'),
             ),
           ],
         );
@@ -1128,9 +1145,9 @@ class _LocatairesPageState extends State<LocatairesPage> {
           backgroundColor: Colors.red,
         ),
       );
-      debugPrint(
-        "Les champs vides : ${_contratIdController.text}, ${_montantController.text}, ${_moisConcerneController.text}, ${_datePaiementController.text}, ${_modePaiementController.text}, ${_referrenceController.text}",
-      );
+      // debugPrint(
+      //   "Les champs vides : ${_contratIdController.text}, ${_montantController.text}, ${_moisConcerneController.text}, ${_datePaiementController.text}, ${_modePaiementController.text}, ${_referrenceController.text}",
+      // );
       return;
     }
     try {
@@ -1144,7 +1161,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
         'referrence': _referrenceController.text,
       };
       final response = await ApiService.addPaiementLocataire(requestData);
-      print("Response: $response");
+      //print("Response: $response");
       if (mounted) {
         Navigator.of(context).pop();
         _clearPaiementForm();
@@ -1174,7 +1191,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
     });
 
     final loadLocataires = await ApiService.getLocataires();
-    print("Les informations des locatires : $loadLocataires");
+    //print("Les informations des locatires : $loadLocataires");
 
     setState(() {
       _isLoading = false;
@@ -1546,6 +1563,16 @@ class _LocatairesPageState extends State<LocatairesPage> {
                 },
                 itemBuilder: (BuildContext context) => [
                   const PopupMenuItem<String>(
+                    value: 'loyer',
+                    child: Row(
+                      children: [
+                        Icon(Icons.payment, color: Color(0xFF234FEF), size: 18),
+                        SizedBox(width: 12),
+                        Text('Paiement loyer'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
                     value: 'modifier',
                     child: Row(
                       children: [
@@ -1562,16 +1589,6 @@ class _LocatairesPageState extends State<LocatairesPage> {
                         Icon(Icons.delete, color: Color(0xFFEF4444), size: 18),
                         SizedBox(width: 12),
                         Text('Supprimer'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'loyer',
-                    child: Row(
-                      children: [
-                        Icon(Icons.payment, color: Color(0xFF234FEF), size: 18),
-                        SizedBox(width: 12),
-                        Text('Paiement loyer'),
                       ],
                     ),
                   ),

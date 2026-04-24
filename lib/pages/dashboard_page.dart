@@ -28,13 +28,13 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final userData = await ApiService.recupererData('user');
 
-    print("Les informations de l'utilisateur: $userData");
-    print("Photo de l'utilisateur: ${userData?['photo']}");
+    // print("Les informations de l'utilisateur: $userData");
+    // print("Photo de l'utilisateur: ${userData?['photo']}");
 
     if (userData?['photo'] != null) {
       final photoUrl =
           'http://10.0.2.2:8000/storage/${userData['photo']}?t=${DateTime.now().millisecondsSinceEpoch}';
-      print("URL complète de la photo: $photoUrl");
+      //print("URL complète de la photo: $photoUrl");
     }
 
     setState(() {
@@ -49,7 +49,7 @@ class _DashboardPageState extends State<DashboardPage> {
     });
 
     final dashboardData = await ApiService.getDashboard();
-    print("Les données du dashboard: $dashboardData");
+    //print("Les données du dashboard: $dashboardData");
 
     setState(() {
       _isLoading = false;

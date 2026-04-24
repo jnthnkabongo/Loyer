@@ -36,6 +36,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
   // CHARGEMENT GLOBAL
   // ==============================
   Future<void> _initPage() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _hasError = false;
@@ -48,6 +49,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
       debugPrint("Erreur globale : $e");
     }
 
+    if (!mounted) return;
     setState(() {
       _hasError = true;
     });
@@ -60,13 +62,15 @@ class _PaiementsPageState extends State<PaiementsPage> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
 
     final userData = await ApiService.recupererData('user');
-    print("Les informations de l'utilisateur: $userData");
+    //print("Les informations de l'utilisateur: $userData");
 
+    if (!mounted) return;
     setState(() {
       _isLoading = false;
       _userData = userData;
@@ -76,6 +80,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
   void _filterPaiements() {
     final query = _searchController.text.toLowerCase();
     if (query.isEmpty) {
+      if (!mounted) return;
       setState(() {
         _filteredPaiements = _loadPaiements?['liste_paiements'] ?? [];
       });
@@ -92,19 +97,22 @@ class _PaiementsPageState extends State<PaiementsPage> {
       return nomClient.contains(query) || appartement.contains(query);
     }).toList();
 
+    if (!mounted) return;
     setState(() {
       _filteredPaiements = filtered;
     });
   }
 
   Future<void> _loadPaiementsData() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
 
     final loadPaiements = await ApiService.getPaiements();
-    print("Les informations des paiements: $loadPaiements");
+    //print("Les informations des paiements: $loadPaiements");
 
+    if (!mounted) return;
     setState(() {
       _isLoading = false;
       _loadPaiements = loadPaiements;
@@ -353,7 +361,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                     Text(
                       'Paiement de ${paiement['contrat']?['locataire']?['prenom'] ?? 'Aucun locataire'} ${paiement['contrat']?['locataire']?['nom'] ?? 'Aucun locataire'}',
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1F2937),
                         fontFamily: 'Poppins',
@@ -388,7 +396,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                 child: Text(
                   paiement['statut'] ?? 'Aucun statut',
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1E40AF),
                     fontFamily: 'Poppins',
@@ -406,7 +414,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                     Text(
                       "Date de création",
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 11,
                         color: Colors.grey.shade500,
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w500,
@@ -416,7 +424,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                     Text(
                       '${DateTime.parse(paiement['created_at']).day.toString().padLeft(2, '0')}/${DateTime.parse(paiement['created_at']).month.toString().padLeft(2, '0')}/${DateTime.parse(paiement['created_at']).year}',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         color: Colors.grey.shade700,
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w600,
@@ -425,7 +433,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                   ],
                 ),
               ),
-              SizedBox(width: 15),
+              SizedBox(width: 2),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,7 +441,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                     Text(
                       "Mode de paiement",
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 11,
                         color: Colors.grey.shade500,
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w500,
@@ -443,7 +451,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                     Text(
                       paiement['mode_paiement'] ?? 'Non spécifié',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         color: Colors.grey.shade700,
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w600,
@@ -452,7 +460,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                   ],
                 ),
               ),
-              SizedBox(width: 15),
+              SizedBox(width: 2),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,7 +468,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                     Text(
                       "Mois concerné",
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 11,
                         color: Colors.grey.shade500,
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w500,
@@ -470,7 +478,7 @@ class _PaiementsPageState extends State<PaiementsPage> {
                     Text(
                       paiement['mois_concerne'] ?? 'Non spécifié',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         color: Colors.grey.shade700,
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w600,
@@ -479,14 +487,14 @@ class _PaiementsPageState extends State<PaiementsPage> {
                   ],
                 ),
               ),
-              SizedBox(width: 15),
+              SizedBox(width: 2),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Montant",
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 11,
                       color: Colors.grey.shade500,
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w500,
@@ -504,10 +512,110 @@ class _PaiementsPageState extends State<PaiementsPage> {
                   ),
                 ],
               ),
+              PopupMenuButton(
+                child: Icon(
+                  Icons.more_vert,
+                  color: Colors.grey.shade600,
+                  size: 20,
+                ),
+                onSelected: (String value) {
+                  _handleMenuAction(value, paiement);
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'Modifier',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, size: 16, color: Colors.orange),
+                        const SizedBox(width: 8),
+                        Text('Modifier', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'Supprimer',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, size: 16, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Text('Supprimer', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  void _handleMenuAction(String action, Map<String, dynamic> paiement) {
+    switch (action) {
+      case 'Modifier':
+        //print('Supprimer le paiement: ${paiement['id']}');
+        break;
+      case 'Supprimer':
+        _showDeleteConfirmationDialog(paiement);
+        //print('Modifier le paiement: ${paiement['id']}');
+        break;
+    }
+  }
+
+  //Modal de suppresion
+
+  void _showDeleteConfirmationDialog(Map<String, dynamic> paiement) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmer la suppresssion du paiement'),
+          content: Text(
+            'Êtes-vous sûr de vouloir supprimer ce paiement de ${paiement['contrat']?['locataire']?['prenom'] ?? 'Aucun locataire'} de ${paiement['montant']}\$ ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await ApiService.deletePaiement({'id': paiement['id']});
+
+                  _loadPaiementsData();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Paiement supprimé avec succès'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  // Fermer le dialog après le succès
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erreur: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  //Fermer le dialog apres l'erreur
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text(
+                'Supprimer',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

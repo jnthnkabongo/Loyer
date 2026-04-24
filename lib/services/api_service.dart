@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   //static const String baseUrl = '';
 
-  static const String baseUrl ='https://mecanismenationaldesuivi.alwaysdata.net';
+  static const String baseUrl =
+      'https://mecanismenationaldesuivi.alwaysdata.net';
   static const String _tokenKey = 'auth_token';
   static const String _userkey = 'user';
 
@@ -191,6 +192,38 @@ class ApiService {
     }
   }
 
+  //Delete locataire
+  static Future<Map<String, dynamic>> deleteLocataire(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/deletelocataire/${data['id']}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
   //Récupérer les notifications de loyers impayés
   static Future<Map<String, dynamic>> getUnpaidNotifications() async {
     try {
@@ -251,7 +284,7 @@ class ApiService {
       throw Exception('Erreur de réseau : ${e.toString()}');
     }
   }
-
+  //Ajouter un paiement
   static Future<Map<String, dynamic>> addPaiementLocataire(
     Map<String, dynamic> data,
   ) async {
@@ -271,6 +304,37 @@ class ApiService {
         body: jsonEncode(data),
       );
       if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+  //Delete paiement 
+  static Future<Map<String, dynamic>> deletePaiement(
+   Map<String, dynamic> data,
+  ) async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/deletepaiement/${data['id']}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data;
       } else {
@@ -344,6 +408,7 @@ class ApiService {
     }
   }
 
+  //Ajouter un logement
   static Future<Map<String, dynamic>> addLogement(
     Map<String, dynamic> data,
   ) async {
@@ -363,6 +428,38 @@ class ApiService {
         body: jsonEncode(data),
       );
       if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur de connexion lors de la connexion';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
+  //Supprimer un logement
+  static Future<Map<String, dynamic>> deleteLogement(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/deletebien/${data['id']}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data;
       } else {
