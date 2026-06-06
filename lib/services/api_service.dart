@@ -161,6 +161,41 @@ class ApiService {
     }
   }
 
+  //Modifier Locataire
+  static Future<Map<String, dynamic>> updateLocataire(
+    Map<String, dynamic> locataireData,
+  ) async {
+    try {
+      final token = await recupererData(_tokenKey);
+      if (token == null) {
+        throw Exception('Token non trouvé');
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/updatelocataire/${locataireData['id']}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(locataireData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("Locataire modifié: $data");
+        return data;
+      } else {
+        final data = jsonDecode(response.body);
+        final message =
+            data['message'] ?? 'Erreur lors de la modification du locataire';
+        throw Exception(message);
+      }
+    } catch (e) {
+      throw Exception('Erreur de réseau : ${e.toString()}');
+    }
+  }
+
   //Liste locataires avec condition
   static Future<Map<String, dynamic>> getLocatairesCond() async {
     try {
@@ -284,6 +319,7 @@ class ApiService {
       throw Exception('Erreur de réseau : ${e.toString()}');
     }
   }
+
   //Ajouter un paiement
   static Future<Map<String, dynamic>> addPaiementLocataire(
     Map<String, dynamic> data,
@@ -316,9 +352,10 @@ class ApiService {
       throw Exception('Erreur de réseau : ${e.toString()}');
     }
   }
-  //Delete paiement 
+
+  //Delete paiement
   static Future<Map<String, dynamic>> deletePaiement(
-   Map<String, dynamic> data,
+    Map<String, dynamic> data,
   ) async {
     try {
       final token = await recupererData(_tokenKey);

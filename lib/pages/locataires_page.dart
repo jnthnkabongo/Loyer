@@ -601,15 +601,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
   void _handleLocataireAction(String action, Map<String, dynamic> locataire) {
     switch (action) {
       case 'modifier':
-        // TODO: Implémenter la modification du locataire
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Modification de ${locataire['prenom']} ${locataire['nom']} bientôt disponible',
-            ),
-            backgroundColor: const Color(0xFF3B82F6),
-          ),
-        );
+        _showEditLocataireDialog(locataire);
         break;
       case 'supprimer':
         _showDeleteConfirmationDialog(locataire);
@@ -618,6 +610,428 @@ class _LocatairesPageState extends State<LocatairesPage> {
         _showAddPaiementLocataireDialog(locataire);
         break;
     }
+  }
+
+  //Modal de modification locataire
+  void _showEditLocataireDialog(Map<String, dynamic> locataire) async {
+    // S'assurer que les biens sont chargés
+    if (_listeBiens == null || _listeBiens!.isEmpty) {
+      await _loadListeBiens();
+    }
+
+    // Pré-remplir les contrôleurs avec les données du locataire
+    final nomController = TextEditingController(text: locataire['nom'] ?? '');
+    final prenomController = TextEditingController(
+      text: locataire['prenom'] ?? '',
+    );
+    final emailController = TextEditingController(
+      text: locataire['email'] ?? '',
+    );
+    final telephoneController = TextEditingController(
+      text: locataire['telephone'] ?? '',
+    );
+    final adresseController = TextEditingController(
+      text: locataire['adresse'] ?? '',
+    );
+    int? selectedLogementId = locataire['bien_id'];
+
+    bool modalLoading = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, modalSetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Modifier un locataire',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: DropdownButtonFormField<int>(
+                            value: selectedLogementId,
+                            decoration: InputDecoration(
+                              hintText: 'Sélectionner un logement',
+                              labelStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.home_work,
+                                color: Color(0xFF3B82F6),
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            items:
+                                _listeBiens?.map((bien) {
+                                  return DropdownMenuItem<int>(
+                                    value: bien['id'],
+                                    child: Text(
+                                      bien['nom'],
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  );
+                                }).toList() ??
+                                [],
+                            onChanged: (value) {
+                              selectedLogementId = value;
+                            },
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            style: const TextStyle(
+                              color: Color(0xFF1F2937),
+                              fontSize: 15,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: TextField(
+                            controller: nomController,
+                            decoration: InputDecoration(
+                              hintText: 'Entrez le nom du locataire',
+                              labelStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.person,
+                                color: Color(0xFF3B82F6),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Poppins',
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: TextField(
+                            controller: prenomController,
+                            decoration: InputDecoration(
+                              hintText: 'Entrez le prénom du locataire',
+                              labelStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.person_outline,
+                                color: Color(0xFF3B82F6),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Poppins',
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: TextField(
+                            controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              hintText: 'Entrez l\'email du locataire',
+                              labelStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.email,
+                                color: Color(0xFF3B82F6),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Poppins',
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: TextField(
+                            controller: telephoneController,
+                            decoration: InputDecoration(
+                              hintText: 'Entrez le téléphone du locataire',
+                              labelStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.phone,
+                                color: Color(0xFF3B82F6),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            keyboardType: TextInputType.phone,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Poppins',
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: TextField(
+                            controller: adresseController,
+                            decoration: InputDecoration(
+                              hintText: 'Entrez l\'adresse du locataire',
+                              labelStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.home,
+                                color: Color(0xFF3B82F6),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 50,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Annuler',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: ElevatedButton(
+                          onPressed: modalLoading
+                              ? null
+                              : () async {
+                                  modalSetState(() {
+                                    modalLoading = true;
+                                  });
+                                  try {
+                                    final locataireData = {
+                                      'id': locataire['id'],
+                                      'nom': nomController.text.trim(),
+                                      'prenom': prenomController.text.trim(),
+                                      'email': emailController.text.trim(),
+                                      'telephone': telephoneController.text
+                                          .trim(),
+                                      'adresse': adresseController.text.trim(),
+                                      'bien_id': selectedLogementId,
+                                    };
+
+                                    await ApiService.updateLocataire(
+                                      locataireData,
+                                    );
+
+                                    if (!mounted) return;
+                                    _loadLocatairesData();
+
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Locataire modifié avec succès',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+
+                                    Navigator.of(context).pop();
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Erreur: ${e.toString()}',
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                  modalSetState(() {
+                                    modalLoading = false;
+                                  });
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 50,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: modalLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Modifier',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _showDeleteConfirmationDialog(Map<String, dynamic> locataire) {
