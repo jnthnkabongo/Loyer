@@ -1,14 +1,26 @@
 import 'dart:convert';
-//import 'dart:io';
-//import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   //static const String baseUrl = '';
 
-  static const String baseUrl =
-      'https://mecanismenationaldesuivi.alwaysdata.net';
+  //static const String baseUrl =
+  //'https://mecanismenationaldesuivi.alwaysdata.net';
+  static String get baseUrl {
+    if (kIsWeb) {
+      return 'http://127.0.0.1:8003';
+    } else if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8003';
+    } else if (Platform.isIOS) {
+      return 'http:127.0.0.1:8003';
+    }
+
+    return 'http://127.0.0.1:8003';
+  }
+
   static const String _tokenKey = 'auth_token';
   static const String _userkey = 'user';
 

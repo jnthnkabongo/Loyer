@@ -1091,6 +1091,23 @@ class _LocatairesPageState extends State<LocatairesPage> {
   void _showAddPaiementLocataireDialog(Map<String, dynamic> locataire) {
     bool modalLoading = false;
 
+    // Chercher le contrat qui lie le locataire à son logement
+    String? selectedContratId;
+
+    if (locataire['biens'] != null && locataire['biens'].isNotEmpty) {
+      final bienId = locataire['biens'][0]['id'];
+      // Chercher le contrat correspondant dans la liste des contrats
+      final contrat = _listeContrats?.firstWhere(
+        (c) => c['bien_id'] == bienId && c['locataire_id'] == locataire['id'],
+        orElse: () => null,
+      );
+      if (contrat != null) {
+        selectedContratId = contrat['id'].toString();
+        _contratIdController.text = contrat['id'].toString();
+        _montantController.text = contrat['loyer_mensuel']?.toString() ?? '';
+      }
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1127,9 +1144,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: DropdownButtonFormField<String>(
-                            initialValue: _contratIdController.text.isEmpty
-                                ? null
-                                : _contratIdController.text,
+                            value: selectedContratId,
                             decoration: InputDecoration(
                               hintText: 'Sélectionner un contrat',
                               labelStyle: TextStyle(
@@ -1163,9 +1178,9 @@ class _LocatairesPageState extends State<LocatairesPage> {
                                 }).toList() ??
                                 [],
                             onChanged: (value) {
-                              setState(() {
-                                _contratIdController.text =
-                                    value?.toString() ?? '';
+                              modalSetStates(() {
+                                selectedContratId = value;
+                                _contratIdController.text = value ?? '';
                               });
                             },
                             dropdownColor: Colors.white,
