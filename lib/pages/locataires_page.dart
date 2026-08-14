@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:gestion_loyer/pages/impaiement_page.dart';
 import 'package:gestion_loyer/services/api_service.dart';
 
 class LocatairesPage extends StatefulWidget {
@@ -609,6 +610,19 @@ class _LocatairesPageState extends State<LocatairesPage> {
       case 'loyer':
         _showAddPaiementLocataireDialog(locataire);
         break;
+      case 'historique':
+        final nomComplet =
+            '${locataire['prenom'] ?? ''} ${locataire['nom'] ?? ''}'.trim();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ImpaiementsPage(
+              locataireId: locataire['id'] as int?,
+              locataireNom: nomComplet.isNotEmpty ? nomComplet : 'Locataire',
+            ),
+          ),
+        );
+        break;
     }
   }
 
@@ -1145,6 +1159,7 @@ class _LocatairesPageState extends State<LocatairesPage> {
                           ),
                           child: DropdownButtonFormField<String>(
                             value: selectedContratId,
+                            isExpanded: true,
                             decoration: InputDecoration(
                               hintText: 'Sélectionner un contrat',
                               labelStyle: TextStyle(
@@ -1167,11 +1182,14 @@ class _LocatairesPageState extends State<LocatairesPage> {
                                 _listeContrats?.map((contrat) {
                                   return DropdownMenuItem<String>(
                                     value: contrat['id'].toString(),
-                                    child: Text(
-                                      contrat['nom_contrat'],
-                                      style: const TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 15,
+                                    child: Expanded(
+                                      child: Text(
+                                        contrat['nom_contrat'],
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 15,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   );
@@ -1966,12 +1984,15 @@ class _LocatairesPageState extends State<LocatairesPage> {
                       color: Colors.grey.shade500,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      locataire['telephone'] ?? 'Aucun téléphone',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
-                        fontFamily: 'Poppins',
+                    Expanded(
+                      child: Text(
+                        locataire['telephone'] ?? 'Aucun téléphone',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          fontFamily: 'Poppins',
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -1991,6 +2012,20 @@ class _LocatairesPageState extends State<LocatairesPage> {
                   _handleLocataireAction(value, locataire);
                 },
                 itemBuilder: (BuildContext context) => [
+                  const PopupMenuItem<String>(
+                    value: 'historique',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.receipt_long,
+                          color: Color(0xFF16A34A),
+                          size: 18,
+                        ),
+                        SizedBox(width: 12),
+                        Text('Voir paiements'),
+                      ],
+                    ),
+                  ),
                   const PopupMenuItem<String>(
                     value: 'loyer',
                     child: Row(

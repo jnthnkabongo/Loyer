@@ -1,30 +1,43 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:gestion_loyer/main.dart';
+import 'package:gestion_loyer/pages/impaiement_page.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test(
+    'filterPaymentsByLocataireId returns only the selected tenant payments',
+    () {
+      final paiements = [
+        {
+          'montant': 250000,
+          'mois_concerne': '2026-01-01',
+          'contrat': {
+            'locataire': {'id': 7},
+          },
+        },
+        {
+          'montant': 250000,
+          'mois_concerne': '2026-02-01',
+          'contrat': {
+            'locataire': {'id': 8},
+          },
+        },
+        {
+          'montant': 250000,
+          'mois_concerne': '2026-03-01',
+          'contrat': {
+            'locataire': {'id': 7},
+          },
+        },
+      ];
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      final filtered = ImpaiementsPage.filterPaymentsByLocataireId(
+        paiements,
+        7,
+      );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+      expect(filtered.length, 2);
+      expect(filtered[0]['mois_concerne'], '2026-03-01');
+      expect(filtered[1]['mois_concerne'], '2026-01-01');
+    },
+  );
 }
